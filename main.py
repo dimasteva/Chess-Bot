@@ -14,7 +14,7 @@ import time
 
 class ChessBot:
     def __init__(self, username, password) -> None:
-        self.url = "https://www.chess.com/"
+        self.url = "https://chess.com/"
         self.service = Service(executable_path="chromedriver.exe")
         self.driver = webdriver.Chrome(service=self.service)
         self.driver.get(self.url)
@@ -110,7 +110,7 @@ class ChessBot:
         else:
             rating = 1800
         
-        skill_level = self.rating_to_skill_level(rating) + 3
+        skill_level = self.rating_to_skill_level(rating) + 8
         return skill_level
 
 
@@ -246,10 +246,26 @@ class ChessBot:
             delta_x = -delta_x
             delta_y = -delta_y
 
+
         second_click = webdriver.common.action_chains.ActionChains(self.driver)
         second_click.move_to_element_with_offset(start_element, delta_x * square['height'] , delta_y * square['height'])
         second_click.click()
         second_click.perform()
+
+        if len(end_square) == 3:
+            multiply = 0
+            if end_square[2] == 'n':
+                multiply = 1
+            elif end_square[2] == 'r':
+                multiply = 2
+            elif end_square[2] == 'b':
+                multiply = 3
+            time.sleep(1)
+            third_click = webdriver.common.action_chains.ActionChains(self.driver)
+            third_click.move_to_element_with_offset(start_element, delta_x * square['height'], delta_y * square['height'] + multiply * square['height'])
+            third_click.click()
+            third_click.perform()
+
 
 
     def play(self):
@@ -257,6 +273,7 @@ class ChessBot:
         WebDriverWait(self.driver, 10).until(
             EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".resign-button-label"))
         )
+        self.driver.execute_script("window.scrollTo(0, 0);")
         stopwatch = self.driver.find_element(By.CLASS_NAME, 'clock-bottom')
         if 'clock-white' in stopwatch.get_attribute('class'):
             self.color = 'w'
@@ -266,8 +283,8 @@ class ChessBot:
         while True:
             try:
                 # Pokušaj pronalaska dugmeta
-                game_over = self.driver.find_element(By.XPATH, '//button[contains(@class, "cc-button-component") and contains(@class, "cc-button-secondary") and contains(@class, "cc-button-medium") and contains(@class, "game-over-buttons-button") and .//span[starts-with(text(), "New")]]')
-                time.sleep(10)
+                game_over = self.driver.find_element(By.XPATH, '//button[contains(@class, "game-over-buttons-button") and .//span[starts-with(text(), "New")]]')
+                #time.sleep(2)
                 game_over.click()
                 print("Button clicked successfully!")
                 break
@@ -285,9 +302,9 @@ class ChessBot:
             except Exception as e:
                 print(f"Element nije pronađen ili došlo je do greške: {e}")
                 
-            time.sleep(0.1)
+            #time.sleep(0.1)
         
-
+#resetuj boju kad se abortuje
 
 
 def main():
