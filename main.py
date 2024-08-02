@@ -4,6 +4,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.chrome.options import Options
 import re
 
 import chess
@@ -15,8 +16,10 @@ import time
 class ChessBot:
     def __init__(self, username, password) -> None:
         self.url = "https://chess.com/"
+        chrome_options = Options()
+        chrome_options.add_argument("--disable-notifications") 
         self.service = Service(executable_path="chromedriver.exe")
-        self.driver = webdriver.Chrome(service=self.service)
+        self.driver = webdriver.Chrome(service=self.service, options=chrome_options)
         self.driver.get(self.url)
         self.color = ""
         self.username = username
@@ -60,42 +63,28 @@ class ChessBot:
 
     def rating_to_skill_level(self, rating):
         if rating < 1100:
-            return 1
-        elif rating < 1200:
-            return 2
-        elif rating < 1300:
-            return 3
-        elif rating < 1400:
-            return 4
-        elif rating < 1500:
-            return 5
-        elif rating < 1600:
-            return 6
-        elif rating < 1700:
-            return 7
-        elif rating < 1800:
             return 8
-        elif rating < 1900:
+        if rating < 1200:
             return 9
-        elif rating < 2000:
+        elif rating < 1300:
             return 10
-        elif rating < 2100:
+        elif rating < 1400:
             return 11
-        elif rating < 2200:
+        elif rating < 1500:
             return 12
-        elif rating < 2300:
+        elif rating < 1600:
             return 13
-        elif rating < 2400:
+        elif rating < 1700:
             return 14
-        elif rating < 2500:
+        elif rating < 1800:
             return 15
-        elif rating < 2600:
+        elif rating < 1900:
             return 16
-        elif rating < 2700:
+        elif rating < 2000:
             return 17
-        elif rating < 2800:
+        elif rating < 2100:
             return 18
-        elif rating < 2900:
+        elif rating < 2200:
             return 19
         else:
             return 20
@@ -110,15 +99,18 @@ class ChessBot:
         else:
             rating = 1800
         
-        skill_level = self.rating_to_skill_level(rating) + 8
+        skill_level = self.rating_to_skill_level(rating) - 3 - 1
         return skill_level
 
 
     def get_best_move(self, fen):
         stockfish_path = 'stockfish-windows-x86-64-avx2.exe'
+
         skill_level = self.get_skill_level()
+
         board = chess.Board(fen)
         print(skill_level)
+
         with chess.engine.SimpleEngine.popen_uci(stockfish_path) as engine:
             engine.configure({"Skill Level": skill_level})
             result = engine.play(board, chess.engine.Limit(time=2.0))
@@ -175,9 +167,6 @@ class ChessBot:
 
                 board[8 - file - 1][rank] = piece_type
         
-        #if self.color == 'black':
-            #board = self.invert_chessboard(board)
-
         fen = self.board_to_fen(board)
         print(fen)
 
@@ -185,17 +174,10 @@ class ChessBot:
         for row in board:
             print(row)
         print()
+
         return fen
 
     def get_square_info(self, square_class):
-        """
-        Vraća centralne koordinate i dimenzije kvadrata na stranici.
-        
-        :param driver: Selenium WebDriver instanca.
-        :param square_class: Klasa kvadrata (npr. 'square-52').
-        :return: Rečnik sa centralnim koordinatama i dimenzijama kvadrata.
-        """
-        # JavaScript kod za dobijanje centralnih koordinata i dimenzija kvadrata
         script = f"""
         const element = document.querySelector('.{square_class}');
         if (element) {{
@@ -210,15 +192,12 @@ class ChessBot:
             return null;
         }}
         """
-        
-        # Izvršavanje JavaScript koda i dobijanje rezultata
         square_info = self.driver.execute_script(script)
         
         if square_info is None:
             raise Exception(f"Element with class '{square_class}' not found.")
         
         return square_info
-
 
     def play_move(self, move):
         move_str = move.uci()
@@ -246,7 +225,6 @@ class ChessBot:
             delta_x = -delta_x
             delta_y = -delta_y
 
-
         second_click = webdriver.common.action_chains.ActionChains(self.driver)
         second_click.move_to_element_with_offset(start_element, delta_x * square['height'] , delta_y * square['height'])
         second_click.click()
@@ -254,13 +232,16 @@ class ChessBot:
 
         if len(end_square) == 3:
             multiply = 0
+
             if end_square[2] == 'n':
                 multiply = 1
             elif end_square[2] == 'r':
                 multiply = 2
             elif end_square[2] == 'b':
                 multiply = 3
+
             time.sleep(1)
+
             third_click = webdriver.common.action_chains.ActionChains(self.driver)
             third_click.move_to_element_with_offset(start_element, delta_x * square['height'], delta_y * square['height'] + multiply * square['height'])
             third_click.click()
@@ -269,42 +250,61 @@ class ChessBot:
 
 
     def play(self):
+
         time.sleep(3)
+        
         WebDriverWait(self.driver, 10).until(
             EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".resign-button-label"))
         )
+
         self.driver.execute_script("window.scrollTo(0, 0);")
+        
         stopwatch = self.driver.find_element(By.CLASS_NAME, 'clock-bottom')
+
         if 'clock-white' in stopwatch.get_attribute('class'):
             self.color = 'w'
         else:
             self.color = 'b'
 
         while True:
-            try:
-                # Pokušaj pronalaska dugmeta
-                game_over = self.driver.find_element(By.XPATH, '//button[contains(@class, "game-over-buttons-button") and .//span[starts-with(text(), "New")]]')
+            #try:
+                #game_over = self.driver.find_element(By.XPATH, '//button[contains(@class, "game-over-buttons-button") and .//span[starts-with(text(), "New")]]')
                 #time.sleep(2)
-                game_over.click()
-                print("Button clicked successfully!")
-                break
-            except Exception as e:
-                print(f"Cekanje: {e}")
-
+                #game_over.click()
+                #print("Button clicked successfully!")
+                #break
+            #except Exception as e:
+                #print(f"Cekanje: {e}")
             try:
-                clock = self.driver.find_element(By.CSS_SELECTOR, 'div.clock-component.clock-bottom.clock-player-turn')
-                if clock:
-                    fen = self.convert_to_FEN()
-                    move = self.get_best_move(fen)
-                    print(move)
-                    self.play_move(move)
-                    
-            except Exception as e:
-                print(f"Element nije pronađen ili došlo je do greške: {e}")
+                WebDriverWait(self.driver, 50).until(
+                    EC.presence_of_all_elements_located((By.CSS_SELECTOR, "div.clock-component.clock-bottom.clock-player-turn"))
+                )
+                fen = self.convert_to_FEN()
+                move = self.get_best_move(fen)
+                print(move)
+                self.play_move(move)
+            except:
+                try:
+                    game_over = self.driver.find_element(By.XPATH, '//button[contains(@class, "game-over-buttons-button") and .//span[starts-with(text(), "New")]]')
+                    time.sleep(2)
+                    game_over.click()
+                    print("Button clicked successfully!")
+                    break
+                except Exception as e:
+                    try:
+                        decline_button = self.driver.find_element(By.XPATH, '//button[contains(@class, "game-over-buttons-button") and .//span[starts-with(text(), "Decline")]]')
+                        decline_button.click()
+                        game_over = self.driver.find_element(By.XPATH, '//button[contains(@class, "game-over-buttons-button") and .//span[starts-with(text(), "New")]]')
+                        time.sleep(2)
+                        game_over.click()
+                        print("Button clicked successfully!")
+                        break
+                    except:
+                        print('Decline button is not found')
+                    #print(f"Cekanje: {e}")
                 
             #time.sleep(0.1)
         
-#resetuj boju kad se abortuje
 
 
 def main():
