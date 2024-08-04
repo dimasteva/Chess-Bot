@@ -1,5 +1,2 @@
-stopwatch = self.driver.find_element(By.CLASS_NAME, 'clock-bottom')
-        if 'clock-white' in stopwatch.get_attribute('class'):
-            self.color = 'white'
-        else:
-            self.color = 'black'
+self.title_label = tk.Label(self, text="Login", font=("Helvetica", 16))
+        self.title_label.pack(pady=(20, 30))
