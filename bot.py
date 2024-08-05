@@ -93,7 +93,9 @@ class ChessBot:
         #rapid.click()
         #time.sleep(3)
         #print('Proslo2')
-        play_button = self.driver.find_element(By.CSS_SELECTOR, 'button.cc-button-full')
+        play_button = WebDriverWait(self.driver, 50).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, 'button.cc-button-full'))
+                    )
         play_button.click()  
         print('Proslo3')       
     
@@ -300,6 +302,10 @@ class ChessBot:
 
     def play_round(self, play_again = False):
         self.driver.execute_script("window.scrollTo(0, 0);")
+
+        WebDriverWait(self.driver, 10).until(
+            EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".resign-button-label"))
+        )
         
         stopwatch = self.driver.find_element(By.CLASS_NAME, 'clock-bottom')
         if 'clock-white' in stopwatch.get_attribute('class'):
@@ -356,6 +362,7 @@ class ChessBot:
     def grind_mode(self):
         self.new_game()
         self.play_round(True)
+        print('GOTOCA RUNDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
     
     def setup_auto_detect_board(self, play_again, stop_event):
         self.stop_event = stop_event
