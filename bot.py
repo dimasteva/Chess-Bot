@@ -48,6 +48,7 @@ class ChessBot:
         self.driver = webdriver.Chrome(service=self.service, options=chrome_options)
         self.driver.get(self.url)
 
+    
     def login(self) -> bool:
         self.driver.get('https://www.chess.com/login')
 
@@ -154,17 +155,15 @@ class ChessBot:
         return skill_level
 
 
-    def get_best_move(self, fen):
+    def get_best_move(self, fen, skill_level):
         stockfish_path = 'stockfish-windows-x86-64-avx2.exe'
-
-        skill_level = self.get_skill_level()
 
         board = chess.Board(fen)
         print(skill_level)
 
         with chess.engine.SimpleEngine.popen_uci(stockfish_path) as engine:
             engine.configure({"Skill Level": skill_level})
-            result = engine.play(board, chess.engine.Limit(time=2.0))
+            result = engine.play(board, chess.engine.Limit(time=1.0))
             best_move = result.move
         
         return best_move
@@ -314,17 +313,37 @@ class ChessBot:
             self.color = 'b'
         while True:
             try:
+                # Waiting for element
+                start_time = time.time()
                 WebDriverWait(self.driver, 50).until(
                     EC.presence_of_all_elements_located((By.CSS_SELECTOR, "div.clock-component.clock-bottom.clock-player-turn"))
                 )
-                print('Nasao je')
+                end_time = time.time()
+                print(f"Wait: {end_time - start_time:.2f} sekundi")
+
+                # Convert to FEN
+                start_time = time.time()
                 fen = self.convert_to_FEN()
-                print('Kovertovao je ')
-                move = self.get_best_move(fen)
-                print('Dobio je best move')
-                print(move)
+                end_time = time.time()
+                print(f"Convert to FEN: {end_time - start_time:.2f} sekundi")
+                
+                # Get skill level
+                start_time = time.time()
+                skill_level = self.get_skill_level()
+                end_time = time.time()
+                print(f"Get skill level: {end_time - start_time:.2f} sekundi")
+                
+                # Get best move
+                start_time = time.time()
+                move = self.get_best_move(fen, skill_level)
+                end_time = time.time()
+                print(f"Get best move: {end_time - start_time:.2f} sekundi")
+                
+                # Play move
+                start_time = time.time()
                 self.play_move(move)
-                print('Odigrao je')
+                end_time = time.time()
+                print(f"Play move: {end_time - start_time:.2f} sekundi")
             except:
                 try:
                     game_over = self.driver.find_element(By.XPATH, '//button[contains(@class, "game-over-buttons-button") and .//span[starts-with(text(), "New")]]')

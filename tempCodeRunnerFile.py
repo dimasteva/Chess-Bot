@@ -1,2 +1,8 @@
-self.title_label = tk.Label(self, text="Login", font=("Helvetica", 16))
-        self.title_label.pack(pady=(20, 30))
+from login import Login
+
+def main():
+    app = Login()
+    app.mainloop()
+
+if __name__ == "__main__":
+    main()
