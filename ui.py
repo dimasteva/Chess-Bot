@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from threading import Thread, Event
 
 class UI(tk.Tk):
@@ -9,7 +9,7 @@ class UI(tk.Tk):
         super().__init__()
         
         self.title("Chess Bot 1.0")
-        self.geometry("500x500")
+        self.geometry("500x800")
 
         # Frame za naslov
         title_frame = tk.Frame(self)
@@ -39,10 +39,40 @@ class UI(tk.Tk):
         # Listboxovi za Grind Mode
         self.listbox_vars = {}
         self.time_options = {
-            'Bullet': ["Don't include", '1 min', '1 | 1', '2 | 1'],
-            'Blitz': ["Don't include", '3 min', '3 | 2', '5 min'],
-            'Rapid': ["Don't include", '10 min', '15 | 10', '30 min'],
-            'Daily': ["Don't include", '1 day', '3 days', '7 days']
+            'Bullet': [
+                "Don't include",
+                '30 sec',
+                '20 sec | 1',
+                '1 min',
+                '1 | 1',
+                '2 | 1'
+            ],
+            'Blitz': [
+                "Don't include",
+                '3 min',
+                '5 min',
+                '5 | 5',
+                '5 | 2',
+                '3 | 2'
+            ],
+            'Rapid': [
+                "Don't include",
+                '10 min',
+                '15 | 10',
+                '20 min',
+                '30 min',
+                '60 min',
+                '10 | 5'
+            ],
+            'Daily': [
+                "Don't include",
+                '1 day',
+                '2 days',
+                '3 days',
+                '5 days',
+                '7 days',
+                '14 days'
+            ]
         }
 
         for i, mode in enumerate(self.time_options.keys()):
@@ -108,6 +138,16 @@ class UI(tk.Tk):
         elif selected_value == 'Grind Mode':
             selected_options = {mode: [self.listbox_vars[mode].get(i) for i in self.listbox_vars[mode].curselection()] 
                                 for mode in self.time_options}
-            self.bot_thread = Thread(target=self.bot.setup_grind_mode, args=(self.stop_event, selected_options))
+            filtered_options = {
+            key: [value for value in values if value != "Don't include"]
+            for key, values in selected_options.items()
+            if "Don't include" not in values or len(values) > 1
+            }
+
+            if not filtered_options:
+                messagebox.showinfo('Error', 'You need to select at least one game mode')
+                return
+
+            self.bot_thread = Thread(target=self.bot.setup_grind_mode, args=(self.stop_event, filtered_options))
             self.bot_thread.start()
 
