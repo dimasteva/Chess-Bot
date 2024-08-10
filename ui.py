@@ -9,7 +9,7 @@ class UI(tk.Tk):
         super().__init__()
         
         self.title("Chess Bot 1.0")
-        self.geometry("500x800")
+        self.geometry("600x800")
 
         # Frame za naslov
         title_frame = tk.Frame(self)
@@ -31,6 +31,10 @@ class UI(tk.Tk):
 
         submit_button = tk.Button(main_frame, text="Submit", command=self.on_submit)
         submit_button.grid(column=1, row=0, padx=20, pady=10)
+
+        self.status_label = tk.Label(main_frame, text="Waiting for match to finish...", font=("Helvetica", 11))
+        self.status_label.grid(column=2, row = 0, padx=20, pady=10)
+        self.status_label.grid_forget()
 
         # Frame za grind mode opcije (prvobitno sakriven)
         self.grind_frame = tk.Frame(main_frame)
@@ -125,11 +129,14 @@ class UI(tk.Tk):
 
     def on_submit(self):
         if self.bot_thread and self.bot_thread.is_alive():
+            self.status_label.grid(column=2, row = 0, padx=20, pady=10)
+            self.update_idletasks()
             self.stop_event.set()
             self.bot_thread.join()
 
         self.stop_event.clear()
-
+        self.status_label.grid_forget()
+        self.update_idletasks()
         selected_value = self.combo.get()
 
         if selected_value == 'Auto Detect Board':

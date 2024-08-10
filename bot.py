@@ -371,7 +371,6 @@ class ChessBot:
 
 
     def play_round(self, play_again = False):
-
         self.driver.execute_script("window.scrollTo(0, 0);")
         while True:
             try:
@@ -380,6 +379,8 @@ class ChessBot:
                 )
                 break
             except:
+                if self.stop_event.is_set():
+                    return
                 print('30 seconds have passed')
 
         self.driver.execute_script("window.scrollTo(0, 0);")
@@ -398,7 +399,7 @@ class ChessBot:
             try:
                 # Waiting for element
                 start_time = time.time()
-                WebDriverWait(self.driver, 50).until(
+                WebDriverWait(self.driver, 10).until(
                     EC.presence_of_all_elements_located((By.CSS_SELECTOR, "div.clock-component.clock-bottom.clock-player-turn"))
                 )
                 end_time = time.time()
@@ -454,6 +455,8 @@ class ChessBot:
     def auto_detect_board(self, play_again = False):
         while True:
             self.play_round(play_again)
+            if self.stop_event.is_set():
+                return
     
     #def grind_mode(self, selected_options):
     #    self.play_round(True)
