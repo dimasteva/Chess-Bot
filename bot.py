@@ -87,8 +87,6 @@ class ChessBot:
     def new_game(self, random_value):
         self.driver.get('https://www.chess.com/play/online/new')
 
-
-
         options = WebDriverWait(self.driver, 50).until(
                     EC.presence_of_element_located((By.CLASS_NAME, 'selector-button-button'))
                     )
@@ -130,29 +128,35 @@ class ChessBot:
         new_game.click()
 
     def rating_to_skill_level(self, rating):
-        if rating < 1100:
-            return 8
-        if rating < 1200:
-            return 9
-        elif rating < 1300:
-            return 10
+        if rating < 800:
+            return 3
+        elif rating < 1100:
+            return 4
+        elif rating < 1250:
+            return 7
         elif rating < 1400:
-            return 11
+            return 8
         elif rating < 1500:
-            return 12
-        elif rating < 1600:
-            return 13
-        elif rating < 1700:
-            return 14
-        elif rating < 1800:
-            return 15
+            return 9
+        elif rating < 1650:
+            return 10
+        elif rating < 1750:
+            return 11
         elif rating < 1900:
-            return 16
+            return 12
         elif rating < 2000:
-            return 17
+            return 13
         elif rating < 2100:
-            return 18
+            return 14
         elif rating < 2200:
+            return 15
+        elif rating < 2300:
+            return 16
+        elif rating < 2400:
+            return 17
+        elif rating < 2500:
+            return 18
+        elif rating < 2700:
             return 19
         else:
             return 20
@@ -169,7 +173,7 @@ class ChessBot:
         else:
             rating = 1200
         
-        skill_level = self.rating_to_skill_level(rating) - 4
+        skill_level = self.rating_to_skill_level(rating)
         print(skill_level)
         return skill_level
 
@@ -180,12 +184,12 @@ class ChessBot:
         board = chess.Board(fen)
         print(skill_level)
 
-        print(f'uso jee  -{game_mode}')
+        #print(f'uso jee  -{game_mode}')
         try:
             time_per_move = self.get_move_time(game_mode)
         except Exception as e:
             print(e)
-        print('ALOOOOO')
+        #print('ALOOOOO')
         print(time_per_move)
 
         with chess.engine.SimpleEngine.popen_uci(stockfish_path) as engine:
@@ -224,15 +228,15 @@ class ChessBot:
             return random.uniform(0.2, 2.9)
 
         elif random_value == '30 sec':
-            return random.uniform(0.1, 0.3)
+            return random.uniform(0.1, 0.2)
         elif random_value == '20 sec | 1':
-            return random.uniform(0.1, 0.9)
+            return random.uniform(0.1, 0.2)
         elif random_value == '1 min':
-            return random.uniform(0.1, 0.9)
+            return random.uniform(0.1, 0.2)
         elif random_value == '1 | 1':
-            return random.uniform(0.1, 1.3)
+            return random.uniform(0.1, 0.4)
         elif random_value == '2 | 1':
-            return random.uniform(0.1, 1.3)
+            return random.uniform(0.1, 0.4)
         else:
             return random.uniform(0.1, 1)
 
@@ -255,9 +259,9 @@ class ChessBot:
         return '/'.join(fen_rows) + ' ' + self.color + ' KQkq - 0 1'
 
     def convert_to_FEN(self):
-        WebDriverWait(self.driver, 10).until(
-            EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".resign-button-label"))
-        )
+        #WebDriverWait(self.driver, 10).until(
+        #    EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".resign-button-label"))
+        #)
 
         figures = self.driver.find_elements(By.CSS_SELECTOR, ".piece")
         board = [["." for _ in range(8)] for _ in range(8)]
@@ -283,12 +287,12 @@ class ChessBot:
                 board[8 - file - 1][rank] = piece_type
         
         fen = self.board_to_fen(board)
-        print(fen)
+        #print(fen)
 
-        print()
-        for row in board:
-            print(row)
-        print()
+        #print()
+        #for row in board:
+            #print(row)
+        #print()
 
         return fen
 
@@ -328,10 +332,12 @@ class ChessBot:
         start_element = self.driver.find_element(By.CLASS_NAME, f'square-{start_x}{start_y}')
         square = self.get_square_info(f'square-{start_x}{start_y}')
 
-        first_click = webdriver.common.action_chains.ActionChains(self.driver)
-        first_click.move_to_element_with_offset(start_element, 0, 0)
-        first_click.click()
-        first_click.perform()
+        #first_click = webdriver.common.action_chains.ActionChains(self.driver)
+        #first_click.move_to_element_with_offset(start_element, 0, 0)
+        #first_click.click()
+        #first_click.perform()
+        start_element.click()
+        #self.driver.execute_script("arguments[0].click();", start_element)
         
         delta_x = end_x - start_x
         delta_y = start_y - end_y
@@ -355,7 +361,7 @@ class ChessBot:
             elif end_square[2] == 'b':
                 multiply = 3
 
-            time.sleep(1)
+            #time.sleep(0.3)
 
             third_click = webdriver.common.action_chains.ActionChains(self.driver)
             third_click.move_to_element_with_offset(start_element, delta_x * square['height'], delta_y * square['height'] + multiply * square['height'])
@@ -364,12 +370,24 @@ class ChessBot:
 
 
 
-    def play_round(self, game_mode, play_again = False):
+    def play_round(self, play_again = False):
+
+        self.driver.execute_script("window.scrollTo(0, 0);")
+        while True:
+            try:
+                WebDriverWait(self.driver, 30).until(
+                    EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".resign-button-label"))
+                )
+                break
+            except:
+                print('30 seconds have passed')
+
         self.driver.execute_script("window.scrollTo(0, 0);")
 
-        WebDriverWait(self.driver, 30).until(
-            EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".resign-button-label"))
-        )
+        game_mode = self.driver.find_element(By.XPATH, "//span[contains(text(), 'min') or contains(text(), 'sec') or contains(text(), '|')]").get_attribute('textContent').strip()
+        game_mode = game_mode.replace("New ", "").strip()
+        print('Game mode je ')
+        print(game_mode)
         
         stopwatch = self.driver.find_element(By.CLASS_NAME, 'clock-bottom')
         if 'clock-white' in stopwatch.get_attribute('class'):
@@ -435,15 +453,7 @@ class ChessBot:
 
     def auto_detect_board(self, play_again = False):
         while True:
-            try:
-                WebDriverWait(self.driver, 50).until(
-                        EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".resign-button-label"))
-                        )
-                break
-            except:
-                print('Proslo 50')
-
-        self.play_round(play_again)
+            self.play_round(play_again)
     
     #def grind_mode(self, selected_options):
     #    self.play_round(True)
@@ -458,6 +468,7 @@ class ChessBot:
 
     def setup_grind_mode(self, stop_event, selected_options):
         self.stop_event = stop_event
+        print('USO je u grind mode')
 
         game = random.choice(list(selected_options.keys()))
         game_mode = random.choice(selected_options[game])
@@ -472,7 +483,7 @@ class ChessBot:
                 play_again = True
             
             print(play_again)
-            self.play_round(game_mode, play_again)
+            self.play_round(play_again)
 
             if self.stop_event.is_set():
                 return
