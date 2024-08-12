@@ -1,21 +1,19 @@
 from selenium import webdriver
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.common.exceptions import NoSuchElementException
-
-import re
 
 import chess
 import chess.engine
 
 import time
 import random
-
+import re
 
 class ChessBot:
     def __init__(self, username, password, headless = False, disable_notifications = True) -> None:
@@ -52,20 +50,19 @@ class ChessBot:
     
     def login(self) -> bool:
         self.driver.get('https://www.chess.com/login')
-
+        
         try:
-            email_input = WebDriverWait(self.driver, 20).until(
+            email_input = WebDriverWait(self.driver, 60).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, 'input[type="email"]'))
             )
-            password_input = WebDriverWait(self.driver, 20).until(
+            password_input = WebDriverWait(self.driver, 60).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, 'input[type="password"]'))
             )
-            submit_button = WebDriverWait(self.driver, 20).until(
+            submit_button = WebDriverWait(self.driver, 60).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, 'button[type="submit"]'))
             )
         except:
-            print('Nije se ucitalo')
-            return False #moraces da promenis messagebox da bude da je presporo a ne wrong credentials
+            return 'TLE'
 
         email_input.send_keys(self.username)
         password_input.send_keys(self.password)
@@ -85,46 +82,74 @@ class ChessBot:
             return False
     
     def new_game(self, random_value):
-        self.driver.get('https://www.chess.com/play/online/new')
+        while True:
+            try:
+                self.driver.get('https://www.chess.com/play/online/new')
 
-        options = WebDriverWait(self.driver, 50).until(
-                    EC.presence_of_element_located((By.CLASS_NAME, 'selector-button-button'))
-                    )
-        self.driver.execute_script("arguments[0].scrollIntoView();", options)
-        options.click()
+                new_game = WebDriverWait(self.driver, 10).until(
+                    EC.element_to_be_clickable((By.CSS_SELECTOR, 'div[data-tab="newGame"].tabs-tab.tabs-active'))
+                )
+                self.driver.execute_script("arguments[0].scrollIntoView();", new_game)
+                new_game.click()
 
-        more_options = WebDriverWait(self.driver, 50).until(
-                    EC.presence_of_element_located((By.XPATH, "//span[@class='toggle-custom-game-label' and text()='More Time Controls']"))
-                    )
-        self.driver.execute_script("arguments[0].scrollIntoView();", more_options)
-        more_options.click()
+                options = WebDriverWait(self.driver, 50).until(
+                            EC.presence_of_element_located((By.CLASS_NAME, 'selector-button-button'))
+                            )
+                self.driver.execute_script("arguments[0].scrollIntoView();", options)
+                options.click()
 
-        mode = WebDriverWait(self.driver, 50).until(
-                    EC.presence_of_element_located((By.XPATH, f'//button[contains(@class, "time-selector-button-button") and text()="{random_value}"]'))
-                    )
-        self.driver.execute_script("arguments[0].scrollIntoView();", mode)
-        mode.click()
-        #time.sleep(3)
-        #print('Proslo1')
-        #rapid = self.driver.find_element(By.XPATH, '//button[contains(@class, "time-selector-button-button") and text()="3 min"]')
-        #rapid.click()
-        #time.sleep(3)
-        #print('Proslo2')
+                more_options = WebDriverWait(self.driver, 50).until(
+                            EC.presence_of_element_located((By.XPATH, "//span[@class='toggle-custom-game-label' and text()='More Time Controls']"))
+                            )
+                self.driver.execute_script("arguments[0].scrollIntoView();", more_options)
+                more_options.click()
 
-        play_button = WebDriverWait(self.driver, 50).until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, 'button.cc-button-full'))
-                    )
-        play_button.click()  
-        print('Proslo3')       
+                mode = WebDriverWait(self.driver, 50).until(
+                            EC.presence_of_element_located((By.XPATH, f'//button[contains(@class, "time-selector-button-button") and text()="{random_value}"]'))
+                            )
+                self.driver.execute_script("arguments[0].scrollIntoView();", mode)
+                mode.click()
+
+                play_button = WebDriverWait(self.driver, 50).until(
+                            EC.presence_of_element_located((By.CSS_SELECTOR, 'button.cc-button-full'))
+                            )
+                #sidebar = WebDriverWait(self.driver, 50).until(
+                    #EC.presence_of_element_located((By.ID, 'board-layout-sidebar'))
+                    #)
+                #self.driver.execute_script("arguments[0].scrollTop = 0;", sidebar)
+                play_button.click()
+                try:
+                    play_fair_button = WebDriverWait(self.driver, 2).until(
+                                EC.presence_of_element_located((By.XPATH, "//button[@class='cc-button-component cc-button-primary cc-button-xx-large cc-button-full fair-play-button']"))
+                                )
+                    play_fair_button.click()
+                except:
+                    pass
+                break
+            except:
+                print('Play button could not be clicked, trying again...')
+
+        #play_button = WebDriverWait(self.driver, 50).until(
+        #    EC.presence_of_element_located((By.CSS_SELECTOR, 'button.cc-button-full'))
+        #)
+        #actions = ActionChains(self.driver)
+        #actions.move_to_element(play_button).perform()
+        #play_button.click()
     
     def start_game(self):
-        play_button = self.driver.find_element(By.CLASS_NAME, 'index-guest-button-title')
+        play_button = WebDriverWait(self.driver, 50).until(
+                    EC.presence_of_element_located((By.CLASS_NAME, 'index-guest-button-title'))
+                    )
         play_button.click()
 
-        pop_up = self.driver.find_element(By.ID, 'guest-button')
+        pop_up = WebDriverWait(self.driver, 50).until(
+                    EC.presence_of_element_located((By.ID, 'guest-button'))
+                    )
         pop_up.click()
 
-        new_game = self.driver.find_element(By.CSS_SELECTOR, '.cc-button-component.cc-button-primary.cc-button-xx-large.cc-button-full')
+        new_game = WebDriverWait(self.driver, 50).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, '.cc-button-component.cc-button-primary.cc-button-xx-large.cc-button-full'))
+                    )
         new_game.click()
 
     def rating_to_skill_level(self, rating):
@@ -168,13 +193,15 @@ class ChessBot:
             rating_match = re.search(r'\((\d+)\)', rating_text)
         except NoSuchElementException:
             rating_match = None
+
         if rating_match:
             rating = int(rating_match.group(1))
         else:
             rating = 1200
         
         skill_level = self.rating_to_skill_level(rating)
-        print(skill_level)
+        print(f'Skill Level: {skill_level}')
+
         return skill_level
 
 
@@ -182,15 +209,13 @@ class ChessBot:
         stockfish_path = 'stockfish-windows-x86-64-avx2.exe'
 
         board = chess.Board(fen)
-        print(skill_level)
 
-        #print(f'uso jee  -{game_mode}')
         try:
             time_per_move = self.get_move_time(game_mode)
         except Exception as e:
             print(e)
-        #print('ALOOOOO')
-        print(time_per_move)
+
+        print(f'Time for stockfish: {time_per_move}')
 
         with chess.engine.SimpleEngine.popen_uci(stockfish_path) as engine:
             engine.configure({"Skill Level": skill_level})
@@ -198,9 +223,6 @@ class ChessBot:
             best_move = result.move
         
         return best_move
-    
-    def invert_chessboard(self, board):
-        return [row[::-1] for row in board[::-1]]
     
     def get_move_time(self, random_value):
         if random_value == '10 min':
@@ -259,10 +281,6 @@ class ChessBot:
         return '/'.join(fen_rows) + ' ' + self.color + ' KQkq - 0 1'
 
     def convert_to_FEN(self):
-        #WebDriverWait(self.driver, 10).until(
-        #    EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".resign-button-label"))
-        #)
-
         figures = self.driver.find_elements(By.CSS_SELECTOR, ".piece")
         board = [["." for _ in range(8)] for _ in range(8)]
 
@@ -287,12 +305,11 @@ class ChessBot:
                 board[8 - file - 1][rank] = piece_type
         
         fen = self.board_to_fen(board)
-        #print(fen)
-
-        #print()
-        #for row in board:
-            #print(row)
-        #print()
+        print(f'Fen: {fen}')
+        print()
+        for row in board:
+            print(row)
+        print()
 
         return fen
 
@@ -320,7 +337,7 @@ class ChessBot:
 
     def play_move(self, move):
         move_str = move.uci()
-        
+        print(f'Move: {move_str}')
         start_square = move_str[:2]
         end_square = move_str[2:]
 
@@ -329,15 +346,12 @@ class ChessBot:
         end_x = ord(end_square[0]) - ord('a') + 1
         end_y = int(end_square[1])
 
-        start_element = self.driver.find_element(By.CLASS_NAME, f'square-{start_x}{start_y}')
+        start_element = WebDriverWait(self.driver, 10).until(
+            EC.element_to_be_clickable((By.CLASS_NAME, f'square-{start_x}{start_y}'))
+        )
         square = self.get_square_info(f'square-{start_x}{start_y}')
 
-        #first_click = webdriver.common.action_chains.ActionChains(self.driver)
-        #first_click.move_to_element_with_offset(start_element, 0, 0)
-        #first_click.click()
-        #first_click.perform()
         start_element.click()
-        #self.driver.execute_script("arguments[0].click();", start_element)
         
         delta_x = end_x - start_x
         delta_y = start_y - end_y
@@ -350,28 +364,22 @@ class ChessBot:
         second_click.move_to_element_with_offset(start_element, delta_x * square['height'] , delta_y * square['height'])
         second_click.click()
         second_click.perform()
+        #print('drugi klik izvrsen')
 
         if len(end_square) == 3:
-            multiply = 0
+            promotion_piece = WebDriverWait(self.driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, f'.promotion-piece.{self.color}{end_square[2]}'))
+            )
 
-            if end_square[2] == 'n':
-                multiply = 1
-            elif end_square[2] == 'r':
-                multiply = 2
-            elif end_square[2] == 'b':
-                multiply = 3
-
-            #time.sleep(0.3)
-
-            third_click = webdriver.common.action_chains.ActionChains(self.driver)
-            third_click.move_to_element_with_offset(start_element, delta_x * square['height'], delta_y * square['height'] + multiply * square['height'])
-            third_click.click()
-            third_click.perform()
+            if promotion_piece:
+                promotion_piece.click()
+            else:
+                print("Promotion piece not found.")
 
 
 
-    def play_round(self, play_again = False):
-        self.driver.execute_script("window.scrollTo(0, 0);")
+    def play_round(self, play_again = False, is_grind_mode = False):
+        #print('LJUDI USO JE U PLAYROUND')
         while True:
             try:
                 WebDriverWait(self.driver, 30).until(
@@ -381,20 +389,23 @@ class ChessBot:
             except:
                 if self.stop_event.is_set():
                     return
-                print('30 seconds have passed')
+                if is_grind_mode:
+                    return
+                #print('60 seconds have passed')
 
         self.driver.execute_script("window.scrollTo(0, 0);")
 
         game_mode = self.driver.find_element(By.XPATH, "//span[contains(text(), 'min') or contains(text(), 'sec') or contains(text(), '|')]").get_attribute('textContent').strip()
         game_mode = game_mode.replace("New ", "").strip()
-        print('Game mode je ')
-        print(game_mode)
+        #print('Game mode je ')
+        #print(game_mode)
         
         stopwatch = self.driver.find_element(By.CLASS_NAME, 'clock-bottom')
         if 'clock-white' in stopwatch.get_attribute('class'):
             self.color = 'w'
         else:
             self.color = 'b'
+        #print('JUPIIII')
         while True:
             try:
                 # Waiting for element
@@ -430,48 +441,60 @@ class ChessBot:
                 print(f"Play move: {end_time - start_time:.2f} sekundi")
             except:
                 try:
-                    game_over = self.driver.find_element(By.XPATH, '//button[contains(@class, "game-over-buttons-button") and .//span[starts-with(text(), "New")]]')
-                    if play_again and not self.stop_event.is_set():
-                        time.sleep(2)
+                    try:
+                        close_game_review_button = WebDriverWait(self.driver, 1).until(
+                        EC.presence_of_element_located((By.XPATH, "//span[@class='game-review-popup-close icon-font-chess x']"))
+                        )
+                        close_game_review_button.click()
+                    except:
+                        pass
+                    game_over = WebDriverWait(self.driver, 2).until(
+                        EC.element_to_be_clickable((By.XPATH, '//button[contains(@class, "game-over-buttons-button") and .//span[starts-with(text(), "New")]]'))
+                    )
+                    if game_over and play_again and not self.stop_event.is_set():
+                        #time.sleep(2)
                         game_over.click()
                         print("Button clicked successfully!")
-                    else:
-                        print('ALOOOOO nije se kliknuo a nadjen je')
-                    break
+                    #else:
+                        #print('ALOOOOO nije se kliknuo a nadjen je')
+                    #print(game_over)
+                    #print(game_over.get_attribute('class'))
+                    #print(game_over.text)
+                    if game_over:
+                        #print('Break NO 1 je puko')
+                        break
                 except Exception as e:
                     try:
                         decline_button = self.driver.find_element(By.XPATH, '//button[contains(@class, "game-over-buttons-button") and .//span[starts-with(text(), "Decline")]]')
                         if play_again and not self.stop_event.is_set():
                             decline_button.click()
                             game_over = self.driver.find_element(By.XPATH, '//button[contains(@class, "game-over-buttons-button") and .//span[starts-with(text(), "New")]]')
-                            time.sleep(2)
+                            #time.sleep(2)
                             game_over.click()
                             print("Button clicked successfully!")
+                        #print('Break NO 2 je puko')
                         break
                     except:
-                        print('Decline button is not found')
+                        print('Move could not be played, Play Again is not found, Decline button is not found')
+                        self.driver.execute_script("window.scrollTo(0, 0);")
     
 
-    def auto_detect_board(self, play_again = False):
-        while True:
-            self.play_round(play_again)
-            if self.stop_event.is_set():
-                return
-    
-    #def grind_mode(self, selected_options):
-    #    self.play_round(True)
-    #    print('GOTOCA RUNDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
+    #def auto_detect_board(self, play_again = False):
+        #while True:
+            #self.play_round(play_again)
+            #if self.stop_event.is_set():
+                #return
     
     def setup_auto_detect_board(self, play_again, stop_event):
         self.stop_event = stop_event
         while True:
-            self.auto_detect_board(play_again)
+            self.play_round(play_again = play_again, is_grind_mode = False)
             if self.stop_event.is_set():
                 return
 
     def setup_grind_mode(self, stop_event, selected_options):
         self.stop_event = stop_event
-        print('USO je u grind mode')
+        #print('USO je u grind mode')
 
         game = random.choice(list(selected_options.keys()))
         game_mode = random.choice(selected_options[game])
@@ -485,8 +508,8 @@ class ChessBot:
             else:
                 play_again = True
             
-            print(play_again)
-            self.play_round(play_again)
+            #print(play_again)
+            self.play_round(play_again = play_again, is_grind_mode = True)
 
             if self.stop_event.is_set():
                 return

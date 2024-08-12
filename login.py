@@ -11,6 +11,7 @@ class Login(tk.Tk):
 
         self.title("Chess Bot 1.0")
         self.geometry("500x300")
+        self.iconbitmap('chess_icon.ico')
 
         self.title_label = tk.Label(self, text="Login", font=("Helvetica", 16))
         self.title_label.pack(pady=(20, 30))
@@ -40,14 +41,17 @@ class Login(tk.Tk):
         email = self.email_entry.get()
         password = self.password_entry.get()
         bot = ChessBot(email, password, headless=False)
-        if bot.login():
+        login_result = bot.login()
+        if login_result == True:
             messagebox.showinfo("Login Successful", "You have successfully logged in!")
             self.withdraw()
             self.launch_ui(bot)
             #bot.switch_to_normal_mode()
             #bot.start()
-        else:
+        elif login_result == False:
             messagebox.showerror("Login Failed", "The email or password is incorrect. Please try again.")
+        elif login_result == 'TLE':
+            messagebox.showerror("Login Failed", "Time Limit Exceeded. Please check your internet connection.")
     
     def launch_ui(self, bot):
         ui = UI(bot)

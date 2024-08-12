@@ -9,21 +9,18 @@ class UI(tk.Tk):
         super().__init__()
         
         self.title("Chess Bot 1.0")
-        self.geometry("600x800")
+        self.geometry("600x500")
+        self.iconbitmap('chess_icon.ico')
 
-        # Frame za naslov
         title_frame = tk.Frame(self)
         title_frame.pack(fill="x")
 
-        # Frame za ostatak GUI-a
         main_frame = tk.Frame(self)
         main_frame.pack(expand=True, fill="both")
 
-        # Dodavanje naslova koristeći pack
         self.title_label = tk.Label(title_frame, text="Gamemodes", font=("Helvetica", 16))
         self.title_label.pack(pady=(20, 30))
 
-        # Dodavanje ostalih widgeta koristeći grid
         options = ['Auto Detect Board', 'Grind Mode']
         self.combo = ttk.Combobox(main_frame, values=options, width=30, state='readonly')
         self.combo.grid(column=0, row=0, padx=20, pady=10)
@@ -36,11 +33,9 @@ class UI(tk.Tk):
         self.status_label.grid(column=2, row = 0, padx=20, pady=10)
         self.status_label.grid_forget()
 
-        # Frame za grind mode opcije (prvobitno sakriven)
         self.grind_frame = tk.Frame(main_frame)
         self.dont_include = False
-        
-        # Listboxovi za Grind Mode
+
         self.listbox_vars = {}
         self.time_options = {
             'Bullet': [
@@ -68,15 +63,15 @@ class UI(tk.Tk):
                 '60 min',
                 '10 | 5'
             ],
-            'Daily': [
-                "Don't include",
-                '1 day',
-                '2 days',
-                '3 days',
-                '5 days',
-                '7 days',
-                '14 days'
-            ]
+            #'Daily': [
+            #    "Don't include",
+            #    '1 day',
+            #    '2 days',
+            #    '3 days',
+            #    '5 days',
+            #    '7 days',
+            #    '14 days'
+            #]
         }
 
         for i, mode in enumerate(self.time_options.keys()):
@@ -85,12 +80,12 @@ class UI(tk.Tk):
             listbox.grid(row=i, column=1, padx=10, pady=5)
             for option in self.time_options[mode]:
                 listbox.insert(tk.END, option)
-            listbox.select_set(0)  # Set "Don't include" as default selection
+            listbox.select_set(0)
             listbox.bind("<<ListboxSelect>>", lambda event, mode=mode: self.on_listbox_select(event, mode))
             self.listbox_vars[mode] = listbox
 
         self.grind_frame.grid(column=0, row=1, columnspan=2, padx=20, pady=10)
-        self.grind_frame.grid_remove()  # Hide grind frame initially
+        self.grind_frame.grid_remove()
 
         self.stop_event = Event()
         self.bot_thread = None
@@ -99,7 +94,6 @@ class UI(tk.Tk):
         listbox = event.widget
         selected_indices = listbox.curselection()
 
-        # Ako je selektovan "Don't include"
         if 0 in selected_indices:
             if len(selected_indices) == 2:
                 if self.dont_include:
@@ -112,10 +106,8 @@ class UI(tk.Tk):
                 for index in selected_indices:
                     listbox.selection_clear(index)
         else:
-            # Ako se selektuje bilo koja druga opcija, deselect "Don't include"
             listbox.selection_clear(0)
 
-        # Ako nije selektovana nijedna opcija, selektuj "Don't include"
         if len(listbox.curselection()) == 0:
             listbox.select_set(0)
 
@@ -123,9 +115,9 @@ class UI(tk.Tk):
     def on_combo_select(self, event):
         selected_value = self.combo.get()
         if selected_value == 'Grind Mode':
-            self.grind_frame.grid()  # Show grind frame
+            self.grind_frame.grid()
         else:
-            self.grind_frame.grid_remove()  # Hide grind frame
+            self.grind_frame.grid_remove()
 
     def on_submit(self):
         if self.bot_thread and self.bot_thread.is_alive():
