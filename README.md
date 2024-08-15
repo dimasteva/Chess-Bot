@@ -8,7 +8,7 @@
 In this mode, the bot automatically starts new games immediately after the previous one ends, making continuous play seamless without the need for manual intervention. It's ideal for players looking to quickly and efficiently boost their rating.
 
 ### Auto Detect Board
-This mode allows the bot to automatically recognize the positions of pieces on the board and play moves accordingly. It facilitates easy switching between games and adapts to real-time changes on the board.
+This mode allows the bot to automatically recognize the positions of pieces on the board and play moves accordingly.
 
 **Chess Bot** is designed for users who want to maximize their efficiency on [chess.com](https://www.chess.com), providing fast and precise assistance during play.
 
