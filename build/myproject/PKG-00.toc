@@ -1,5 +1,5 @@
-('C:\\Users\\dimas\\OneDrive\\Desktop\\Chess '
- 'Bot\\build\\myproject\\myproject.pkg',
+('C:\\Users\\dimas\\OneDrive\\Desktop\\Chess Bot\\build\\myproject\\Chess Bot '
+ '1.0.pkg',
  {'BINARY': True,
   'DATA': True,
   'EXECUTABLE': True,

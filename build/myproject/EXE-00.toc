@@ -1,9 +1,9 @@
-('C:\\Users\\dimas\\OneDrive\\Desktop\\Chess '
- 'Bot\\build\\myproject\\myproject.exe',
+('C:\\Users\\dimas\\OneDrive\\Desktop\\Chess Bot\\build\\myproject\\Chess Bot '
+ '1.0.exe',
  True,
  False,
  True,
- 'C:\\Users\\dimas\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\PyInstaller\\bootloader\\images\\icon-console.ico',
+ ['C:\\Users\\dimas\\OneDrive\\Desktop\\Chess Bot\\chess_icon.ico'],
  None,
  False,
  False,
@@ -30,8 +30,8 @@
  None,
  None,
  None,
- 'C:\\Users\\dimas\\OneDrive\\Desktop\\Chess '
- 'Bot\\build\\myproject\\myproject.pkg',
+ 'C:\\Users\\dimas\\OneDrive\\Desktop\\Chess Bot\\build\\myproject\\Chess Bot '
+ '1.0.pkg',
  [('pyi-contents-directory _internal', '', 'OPTION'),
   ('PYZ-00.pyz',
    'C:\\Users\\dimas\\OneDrive\\Desktop\\Chess '
@@ -81,7 +81,7 @@
  [],
  False,
  False,
- 1722857241,
+ 1723480595,
  [('run.exe',
    'C:\\Users\\dimas\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\PyInstaller\\bootloader\\Windows-64bit-intel\\run.exe',
    'EXECUTABLE')],

@@ -154,34 +154,30 @@ class ChessBot:
 
     def rating_to_skill_level(self, rating):
         if rating < 800:
-            return 3
+            return 5
         elif rating < 1100:
-            return 4
+            return 6
         elif rating < 1250:
-            return 7
-        elif rating < 1400:
-            return 8
-        elif rating < 1500:
             return 9
-        elif rating < 1650:
+        elif rating < 1400:
             return 10
-        elif rating < 1750:
+        elif rating < 1500:
             return 11
-        elif rating < 1900:
+        elif rating < 1650:
             return 12
-        elif rating < 2000:
+        elif rating < 1750:
             return 13
-        elif rating < 2100:
+        elif rating < 1900:
             return 14
-        elif rating < 2200:
+        elif rating < 2000:
             return 15
-        elif rating < 2300:
+        elif rating < 2100:
             return 16
-        elif rating < 2400:
+        elif rating < 2200:
             return 17
-        elif rating < 2500:
+        elif rating < 2300:
             return 18
-        elif rating < 2700:
+        elif rating < 2400:
             return 19
         else:
             return 20
@@ -215,7 +211,7 @@ class ChessBot:
         except Exception as e:
             print(e)
 
-        print(f'Time for stockfish: {time_per_move}')
+        #print(f'Time for stockfish: {time_per_move}')
 
         with chess.engine.SimpleEngine.popen_uci(stockfish_path) as engine:
             engine.configure({"Skill Level": skill_level})
@@ -226,28 +222,28 @@ class ChessBot:
     
     def get_move_time(self, random_value):
         if random_value == '10 min':
-            return random.uniform(0.5, 7.5)
+            return random.uniform(0.1, 4.5)
         elif random_value == '15 | 10':
-            return random.uniform(6.5, 20.5)
+            return random.uniform(0.3, 12.5)
         elif random_value == '20 min':
-            return random.uniform(5.3, 18.4)
+            return random.uniform(5.3, 11.4)
         elif random_value == '30 min':
-            return random.uniform(8.2, 22.8)
+            return random.uniform(3.2, 13.8)
         elif random_value == '60 min':
-            return random.uniform(15.6, 27.4)
+            return random.uniform(4.6, 19.4)
         elif random_value == '10 | 5':
-            return random.uniform(3.8, 10.4)
+            return random.uniform(0.1, 6.3)
 
         elif random_value == '3 min':
-            return random.uniform(0.3, 3.5)
+            return random.uniform(0.3, 2)
         elif random_value == '5 min':
-            return random.uniform(0.5, 4.3)
+            return random.uniform(0.5, 3)
         elif random_value == '5 | 5':
-            return random.uniform(0.7, 3.9)
+            return random.uniform(0.1, 3.9)
         elif random_value == '5 | 2':
-            return random.uniform(0.6, 3.3)
+            return random.uniform(0.1, 1.4)
         elif random_value == '3 | 2':
-            return random.uniform(0.2, 2.9)
+            return random.uniform(0.1, 1.2)
 
         elif random_value == '30 sec':
             return random.uniform(0.1, 0.2)
@@ -256,9 +252,9 @@ class ChessBot:
         elif random_value == '1 min':
             return random.uniform(0.1, 0.2)
         elif random_value == '1 | 1':
-            return random.uniform(0.1, 0.4)
+            return random.uniform(0.1, 0.2)
         elif random_value == '2 | 1':
-            return random.uniform(0.1, 0.4)
+            return random.uniform(0.1, 0.2)
         else:
             return random.uniform(0.1, 1)
 
@@ -387,9 +383,14 @@ class ChessBot:
                 )
                 break
             except:
-                if self.stop_event.is_set():
-                    return
-                if is_grind_mode:
+                if is_grind_mode or self.stop_event.is_set():
+                    try:
+                        cancel_button = WebDriverWait(self.driver, 10).until(
+                            EC.presence_of_element_located((By.CLASS_NAME, "outgoing-challenge-box-cancel"))
+                        )
+                        cancel_button.click()
+                    except:
+                        print('Cancel button is not found')
                     return
                 #print('60 seconds have passed')
 
@@ -414,31 +415,31 @@ class ChessBot:
                     EC.presence_of_all_elements_located((By.CSS_SELECTOR, "div.clock-component.clock-bottom.clock-player-turn"))
                 )
                 end_time = time.time()
-                print(f"Wait: {end_time - start_time:.2f} sekundi")
+                print(f"Wait: {end_time - start_time:.2f} seconds")
 
                 # Convert to FEN
                 start_time = time.time()
                 fen = self.convert_to_FEN()
                 end_time = time.time()
-                print(f"Convert to FEN: {end_time - start_time:.2f} sekundi")
+                print(f"Convert to FEN: {end_time - start_time:.2f} seconds")
                 
                 # Get skill level
                 start_time = time.time()
                 skill_level = self.get_skill_level()
                 end_time = time.time()
-                print(f"Get skill level: {end_time - start_time:.2f} sekundi")
+                print(f"Get skill level: {end_time - start_time:.2f} seconds")
                 
                 # Get best move
                 start_time = time.time()
                 move = self.get_best_move(fen, skill_level, game_mode)
                 end_time = time.time()
-                print(f"Get best move: {end_time - start_time:.2f} sekundi")
+                print(f"Get best move: {end_time - start_time:.2f} seconds")
                 
                 # Play move
                 start_time = time.time()
                 self.play_move(move)
                 end_time = time.time()
-                print(f"Play move: {end_time - start_time:.2f} sekundi")
+                print(f"Play move: {end_time - start_time:.2f} seconds")
             except:
                 try:
                     try:
@@ -448,7 +449,7 @@ class ChessBot:
                         close_game_review_button.click()
                     except:
                         pass
-                    game_over = WebDriverWait(self.driver, 2).until(
+                    game_over = WebDriverWait(self.driver, 3).until(
                         EC.element_to_be_clickable((By.XPATH, '//button[contains(@class, "game-over-buttons-button") and .//span[starts-with(text(), "New")]]'))
                     )
                     if game_over and play_again and not self.stop_event.is_set():
