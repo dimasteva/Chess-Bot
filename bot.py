@@ -154,33 +154,46 @@ class ChessBot:
 
     def rating_to_skill_level(self, rating):
         if rating < 800:
-            return 5
+            return 1
+        elif rating < 900:
+            return 2
+        elif rating < 1000:
+            return 3
         elif rating < 1100:
+            return 4
+        elif rating < 1200:
+            return 5
+        elif rating < 1300:
             return 6
-        elif rating < 1250:
-            return 9
         elif rating < 1400:
-            return 10
+            return 7
         elif rating < 1500:
+            return 8
+        elif rating < 1600:
+            return 9
+        elif rating < 1700:
+            return 10
+        elif rating < 1800:
             return 11
-        elif rating < 1650:
-            return 12
-        elif rating < 1750:
-            return 13
         elif rating < 1900:
-            return 14
+            return 12
         elif rating < 2000:
-            return 15
+            return 13
         elif rating < 2100:
-            return 16
+            return 14
         elif rating < 2200:
-            return 17
+            return 15
         elif rating < 2300:
-            return 18
+            return 16
         elif rating < 2400:
+            return 17
+        elif rating < 2500:
+            return 18
+        elif rating < 2700:
             return 19
         else:
             return 20
+
 
     def get_skill_level(self):
         try:
